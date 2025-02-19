@@ -29,3 +29,10 @@ with torch.no_grad():
     print(predictions)
     labels = torch.argmax(predictions, dim=1)
     print(labels)
+
+save_directory = "saved"
+tokenizer.save_pretrained(save_directory)
+model.save_pretrained(save_directory)
+
+tok = AutoTokenizer.from_pretrained(save_directory)
+mod = AutoModelForSequenceClassification.from_pretrained(save_directory)

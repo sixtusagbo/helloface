@@ -1,28 +1,31 @@
 from transformers import pipeline
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-
-classifier = pipeline("sentiment-analysis")
-
-result = classifier("I'm very happy to use the Transformers library")
-
-print(result)
+import torch
+import torch.nn.functional as F
 
 model_name = "distilbert-base-uncased-finetuned-sst-2-english"
-model = AutoModelForSequenceClassification.from_pretrained(model_name)
+model = AutoModelForSequenceClassification.from_pretrained(model_name).to("mps")
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 classifier = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
 
-result = classifier("I'm very happy to use the Transformers library")
+x_train = ["I'm very happy to use the Transformers library", "Python is great!"]
 
+result = classifier(x_train)
 print(result)
 
-sequence = "Using a Transformer network is simple"
-result = tokenizer(sequence)
-print(result)
-tokens = tokenizer.tokenize(sequence)
-print(tokens)
-ids = tokenizer.convert_tokens_to_ids(tokens)
-print(ids)
-decoded_string = tokenizer.decode(ids)
-print(decoded_string)
+batch = tokenizer(
+    x_train, padding=True, truncation=True, max_length=512, return_tensors="pt"
+)
+
+# Move tokenized batch to MPS device
+batch = {k: v.to("mps") for k, v in batch.items()}
+print(batch)
+
+with torch.no_grad():
+    outputs = model(**batch)
+    print(outputs)
+    predictions = F.softmax(outputs.logits, dim=1)
+    print(predictions)
+    labels = torch.argmax(predictions, dim=1)
+    print(labels)

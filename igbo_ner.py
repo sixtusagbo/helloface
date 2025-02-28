@@ -6,7 +6,9 @@ tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForTokenClassification.from_pretrained(model_name)
 
 nlp = pipeline(
-    "ner", model=model, tokenizer=tokenizer, aggregation_strategy="simple"
+    "ner",
+    model=model,
+    tokenizer=tokenizer,
 )
 example = "Chinua Achebe bụ onye edemede Nigeria"
 
